@@ -1,0 +1,16 @@
+{
+    "name": "blazemedia/ebay-product-feed-api",
+    "description": "Php wrapper for EPN Product Feed Api",
+    "autoload": {
+        "psr-4": {
+            "Blazemedia\\EbayProductFeedApi\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Blazemedia",
+            "email": "techteam@blazemedia.it"
+        }
+    ],
+    "require": {}
+}
