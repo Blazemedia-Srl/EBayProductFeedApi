@@ -26,7 +26,7 @@ final class ApiClientTest extends TestCase {
     /** @test */
     public function it_can_connect_to_eBay_and_retrieve_a_token() {
 
-        $this->assertEquals( strlen($this->client->token->token) , 1924 );
+        $this->assertFalse( $this->client->token->isExpired() );
     }
 
 

@@ -116,8 +116,20 @@ class ApiClient {
                 'X-EBAY-C-MARKETPLACE-ID' => 'EBAY_IT',
                 /// Accede con il token oauth 2 
                 'Authorization' => "Bearer {$this->token->token}",
-                
-                'Range' => 'bytes=0-2097152',
+                [
+                    'key'   => 'Range',
+                    'value' => 'bytes=0-93071018',
+                ],
+                [
+                    'key'   => "Accept",
+                    'value' =>  "application/octet-stream",
+                    "disabled"=> true
+                ],
+                [
+                    'key'   => "Content-Type",
+                    'value' => "application/octet-stream",
+                    "disabled"=> true
+                ],
             ],
 
         ]);
