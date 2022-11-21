@@ -3,10 +3,9 @@
 namespace Tests;
 
 use Blazemedia\EbayProductFeedApi\ApiClient;
-use GuzzleHttp\Client;
 use PHPUnit\Framework\TestCase;
 
-final class ClientTest extends TestCase {
+final class ApiClientTest extends TestCase {
 
     protected $client;
 
@@ -27,7 +26,7 @@ final class ClientTest extends TestCase {
     /** @test */
     public function it_can_connect_to_eBay_and_retrieve_a_token() {
 
-        $this->assertEquals( strlen($this->client->token) , 1928 );
+        $this->assertEquals( strlen($this->client->token->token) , 1924 );
     }
 
 
@@ -44,7 +43,12 @@ final class ClientTest extends TestCase {
 
         $files = $this->client->GetFiles();
 
-        $bytes = $this->client->download( $files[0]);
+        $bytes = 0;
+
+        foreach( $files as $file ) {
+            $bytes += $this->client->download( $file );
+        }
+        
       
         $this->assertGreaterThan( 0,  $bytes );
     }

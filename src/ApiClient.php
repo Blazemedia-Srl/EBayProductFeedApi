@@ -4,6 +4,7 @@ namespace Blazemedia\EbayProductFeedApi;
 
 use Exception;
 use GuzzleHttp\Client;
+use Blazemedia\EbayProductFeedApi\Token;
 
 class ApiClient {
 
@@ -11,7 +12,7 @@ class ApiClient {
 
     private Client $httpClient;
         
-    public string $token;
+    public Token $token;
     
     private $api = 'https://api.ebay.com/';
 
@@ -19,6 +20,8 @@ class ApiClient {
 
     private function __construct() {
 
+        /// istanzia il client 
+        /// e imposta i valori di base delle chiamate 
         $this->httpClient = new Client([
             
             'base_uri' => $this->api,
@@ -28,8 +31,6 @@ class ApiClient {
         /// effettua il login all'api e rende disponibile
         /// il token all'istanza
         $this->token = $this->getAuthToken();
-
-        //        var_dump( $this->token );
     }
 
 
@@ -51,7 +52,7 @@ class ApiClient {
                 /// indica che il marketplace è quello italiano
                 'X-EBAY-C-MARKETPLACE-ID' => 'EBAY_IT',
                 /// Accede con il token oauth 2 
-                'Authorization' => "Bearer {$this->token}"                  
+                'Authorization' => "Bearer {$this->token->token}"                  
             ],
 
             'query' => [ 
@@ -60,7 +61,7 @@ class ApiClient {
 
                 /// categorie
                 'category_ids' => ApiClient::DEF_CATERGORY_ID,
-                /*
+                
                 [
                     "key" => "category_ids",
                     "value" =>  "58058,3187",
@@ -69,20 +70,24 @@ class ApiClient {
                 ],
                 [
                     "key"   =>  "look_back",
-					"value" =>  "1440",
+					"value" =>  "2000",
                     "description" =>  "Minutes; 1440 = 24h",
-					"disabled" =>  false
+					"disabled" =>  true
+                ],
+                [
+                    "key" =>  "Range",
+					"value" => "bytes=50000-3071018"
                 ]
-                */
+                
             ]
         ]);
 
-        if( empty($response) ) return '';
+        if( empty($response) ) return [];
 
         /// prende lo stream dati come stringa
         $string_data = $response->getBody()->getContents();
 
-        if( empty( $string_data ) ) return '';
+        if( empty( $string_data ) ) return [];
 
         /// la trasforma in array associativo
         $data = array_map( fn( $file ) => $file->fileId , json_decode( $string_data) ->fileMetadata);
@@ -110,7 +115,7 @@ class ApiClient {
                 /// indica che il marketplace è quello italiano
                 'X-EBAY-C-MARKETPLACE-ID' => 'EBAY_IT',
                 /// Accede con il token oauth 2 
-                'Authorization' => "Bearer {$this->token}",
+                'Authorization' => "Bearer {$this->token->token}",
                 
                 'Range' => 'bytes=0-2097152',
             ],
@@ -122,80 +127,54 @@ class ApiClient {
         /// prende lo stream dati come stringa
         $data = $response->getBody()->getContents();
 
+        //var_dump($data); die;
+
         /// lo scrive su un file
-        $bytes = file_put_contents( "{$base_path}{$file}", $data );
+        //$bytes = file_put_contents( "{$base_path}{$file}", $data );
+
+        /// prova ad aprire il file in scrittura
+        $file = fopen( "{$base_path}{$file}", 'w');
+
+        $bytes = fwrite( $file, $data, strlen( $data ) );
+        fclose( $file ); 
 
         return $bytes;
+        
     }
 
 
     /**
      * Ritorna il token per l'autorizzazione
      *
-     * @return string
+     * @return Token
      */
-    protected function getAuthToken() : string {
+    protected function getAuthToken() : Token {
 
-        /// ottiene il token da file o da chiamata http
-        $token = $this->readToken();
+        $token = new Token;
 
-        /// persiste il token su file
-        $this->writeToken( $token );
-        
-        return  $token;
+        if( $token->isExpired() ) {
+
+            /// scarica un nuovo token
+            $token_data = $this->getTokenData();
+
+            /// il timestamp attuale + la durata del token - un minuto ( non si sa mai )
+            $expires_on = strtotime('now') + $token_data['expires_in'] - 60;
+
+            /// salva il nuovo token
+            $token->set( $token_data[ 'access_token' ],  $expires_on );
+        }
+
+        return $token;    
     }
 
-
-    /**
-     * Ritorna il token contenuto nel file
-     *
-     * @return string
-     */
-    protected function readToken() : string {
-
-        try {
-
-            /// viene recuperato il token dal contenuto del file
-            $token = parse_ini_file('./token.ini');
-
-            return trim( $token[ "token" ] );
-        
-        } catch( Exception $e ) {
-
-            $token = $this->getToken();
-
-            $this->writeToken( $token );
-
-            return $token;
-        }         
-    }
-
-    
-    /**
-     * Scrive il token in un file
-     *
-     * @param string $token
-     * @param string $filepath
-     * @return void
-     */
-    protected function writeToken( string $token, string $filepath = './token.ini' ) { 
-
-        /// prova ad aprire il file in scrittura
-        $file = fopen( $filepath, 'w');
-
-        if( $file === false ) return; 
-
-        fwrite( $file, "token=\"{$token}\"" );
-        fclose( $file ); 
-    }
 
     /**
      * Effettua la chiamata per la generazione del token
      * da utilizzare nelle chiamate
      *
-     * @return string
+     * @return array
      */
-    protected function getToken() { 
+    protected function getTokenData() : array { 
 
         $apiTokenRequestCall = 'identity/v1/oauth2/token';
     
@@ -234,7 +213,7 @@ class ApiClient {
         /// la trasforma in array associativo
         $data = json_decode( $string_data, true );
 
-        return $data[ 'access_token' ];
+        return $data;
     }
 
     
