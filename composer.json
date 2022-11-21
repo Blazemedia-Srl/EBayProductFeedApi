@@ -12,5 +12,7 @@
             "email": "techteam@blazemedia.it"
         }
     ],
-    "require": {}
+    "require": {
+        "guzzlehttp/guzzle": "^7.5"
+    }
 }
