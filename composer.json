@@ -3,7 +3,8 @@
     "description": "Php wrapper for EPN Product Feed Api",
     "autoload": {
         "psr-4": {
-            "Blazemedia\\EbayProductFeedApi\\": "src/"
+            "Blazemedia\\EbayProductFeedApi\\": "src/",
+            "Tests\\": "tests/"
         }
     },
     "authors": [
@@ -14,5 +15,8 @@
     ],
     "require": {
         "guzzlehttp/guzzle": "^7.5"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.5"
     }
 }
