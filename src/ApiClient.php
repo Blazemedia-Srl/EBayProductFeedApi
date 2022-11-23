@@ -36,13 +36,22 @@ class ApiClient {
 
 
     /**
-     * Restituisce l'array dei file da scaricare
+     * 
      *
      * @return array
      */
-    function GetFiles() : array { 
+
+    /**
+     * Restituisce l'array dei file da scaricare
+     *
+     * @param integer $lookBackDays - How many days ago to start gathering offers, defaults to 1
+     * @return array
+     */
+    function GetFiles( int $lookBackDays = 1 ) : array { 
 
         $apiTokenRequestCall = 'buy/feed/v1/file';
+
+        $lookBackSeconds = $lookBackDays * 1440;
     
         /// Effettua la chiamata
         $response = $this->httpClient->get( $apiTokenRequestCall, [
@@ -70,7 +79,7 @@ class ApiClient {
                 ],
                 [
                     "key"   =>  "look_back",
-					"value" =>  "2000",
+					"value" =>  $lookBackSeconds,
                     "description" =>  "Minutes; 1440 = 24h",
 					"disabled" =>  true
                 ],
