@@ -63,6 +63,7 @@ final class TaxonomyApiClientTest extends TestCase {
     }
 
 
+
     /** @test */
     public function it_can_find_a_category_by_name() {
 
@@ -77,17 +78,36 @@ final class TaxonomyApiClientTest extends TestCase {
 
         $tree = $this->client->getCategoryTree( $id );
 
-        $categories = [
-            ...$this->client->findCategories( 'elettronica', $tree ),
-            ...$this->client->findCategories( 'cellulari e smartphone', $tree ),
-            ...$this->client->findCategories( 'cover', $tree )
+        $categories = [         
+            ...$this->client->findCategories( 'cellulari e smartphone', $tree )
         ];
-
-        print_r( $categories ); 
-
       
         $this->assertIsArray( $categories );
     }
 
+
+
+    /** @test */
+    public function it_can_find_all_the_level_1_categories() {
+
+        $id = 0;
+        try { 
+            $id = $this->client->GetDefaultCategoryTreeID();
+        
+        } catch( Exception $e ){
+
+            var_dump( $e->getMessage() );
+        }
+
+        $tree = $this->client->getCategoryTree( $id );
+
+        $categories = $this->client->getLevel1Categories( $tree );         
+        
+
+        print_r( $categories ); 
+
+        $this->assertIsArray( $categories );
+    }
+    
    
 }

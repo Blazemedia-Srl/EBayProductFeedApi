@@ -146,6 +146,38 @@ class TaxonomyApiClient {
     }
 
 
+    /**
+     * Restituisce le categorie di livello 1
+     *     
+     * @return array
+     */
+    function getLevel1Categories( object $tree ) : array { 
+
+        $data = [];
+
+        if( isset( $tree->categoryTreeNodeLevel) && $tree->categoryTreeNodeLevel == 1 ) {
+
+            $data = [
+                [
+                    'categoryId'   => $tree->category->categoryId,
+                    'categoryName' => $tree->category->categoryName,
+                    'level'        => $tree->categoryTreeNodeLevel
+                ]
+            ];
+        } 
+
+        if( isset( $tree->childCategoryTreeNodes ) && !empty( $tree->childCategoryTreeNodes ) ) {
+            
+            $subtree = array_map( fn( $item ) => $this->getLevel1Categories( $item ), $tree->childCategoryTreeNodes ); 
+
+            $data = array_merge( $data, ...array_filter( $subtree, fn( $item ) => !empty($item) ) );
+
+        }
+
+        return $data;
+    } 
+
+
 
     /**
      * Cerca le categorie che hanno un nome simile a quello inserito

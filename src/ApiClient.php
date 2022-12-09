@@ -71,12 +71,12 @@ class ApiClient {
                 /// categorie
                 'category_ids' => $this->categoryId,
                 
-                [
+                /*[
                     "key" => "category_ids",
                     "value" =>  "58058,3187",
                     "description" =>  "L1 categories; csv",
                     "disabled" =>  true               
-                ],
+                ],*/
                 [
                     "key"   =>  "look_back",
 					"value" =>  $lookBackSeconds,
