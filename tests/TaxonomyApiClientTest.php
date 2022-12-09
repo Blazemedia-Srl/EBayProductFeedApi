@@ -82,6 +82,9 @@ final class TaxonomyApiClientTest extends TestCase {
             ...$this->client->findCategories( 'cellulari e smartphone', $tree )
         ];
       
+
+        print_r( $categories ); 
+
         $this->assertIsArray( $categories );
     }
 

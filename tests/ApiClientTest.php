@@ -5,7 +5,7 @@ namespace Tests;
 use Blazemedia\EbayProductFeedApi\ApiClient;
 use PHPUnit\Framework\TestCase;
 
-define('DEF_CATERGORY_ID', 11450);
+define('DEF_CATERGORY_ID', 15032 ); // Telefonia fissa e mobile
 
 final class ApiClientTest extends TestCase {
 
