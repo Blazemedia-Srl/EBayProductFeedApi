@@ -6,15 +6,14 @@ use Exception;
 
 class Token {
 
-    const DEFAULT_FILE = './token.ini';
-
     public string $token;
     private int $expiresOn;
     private $file;
+    private $scope;
 
-    function __construct( $file = self::DEFAULT_FILE ) {
+    function __construct( $scope ) {
 
-        $this->file = $file;
+        $this->file = "./{$scope}.token.ini";
 
         $this->read();
     }

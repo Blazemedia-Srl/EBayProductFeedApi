@@ -8,7 +8,10 @@ use Blazemedia\EbayProductFeedApi\Token;
 
 class ApiClient {
 
-    private static ?ApiClient $instance = null;
+    use OAuth;
+
+    
+    private static ?ApiClient $instance = null; // $istance is null or ApiClient
 
     private Client $httpClient;
         
@@ -16,9 +19,13 @@ class ApiClient {
     
     private $api = 'https://api.ebay.com/';
 
-    const DEF_CATERGORY_ID = 11450;
+    private int $categoryId;
 
-    private function __construct() {
+    
+
+    private function __construct( int $categoryId ) {
+
+        $this->categoryId = $categoryId;
 
         /// istanzia il client 
         /// e imposta i valori di base delle chiamate 
@@ -30,16 +37,9 @@ class ApiClient {
 
         /// effettua il login all'api e rende disponibile
         /// il token all'istanza
-        $this->token = $this->getAuthToken();
+        $this->token = $this->getAuthToken( $this->httpClient, 'buy.item.feed' );
     }
 
-
-
-    /**
-     * 
-     *
-     * @return array
-     */
 
     /**
      * Restituisce l'array dei file da scaricare
@@ -69,7 +69,7 @@ class ApiClient {
                 'feed_type_id' => 'PRODUCT_FEED',
 
                 /// categorie
-                'category_ids' => ApiClient::DEF_CATERGORY_ID,
+                'category_ids' => $this->categoryId,
                 
                 [
                     "key" => "category_ids",
@@ -162,87 +162,12 @@ class ApiClient {
         return $bytes;
         
     }
-
-
-    /**
-     * Ritorna il token per l'autorizzazione
-     *
-     * @return Token
-     */
-    protected function getAuthToken() : Token {
-
-        $token = new Token;
-
-        if( $token->isExpired() ) {
-
-            /// scarica un nuovo token
-            $token_data = $this->getTokenData();
-
-            /// il timestamp attuale + la durata del token - un minuto ( non si sa mai )
-            $expires_on = strtotime('now') + $token_data['expires_in'] - 60;
-
-            /// salva il nuovo token
-            $token->set( $token_data[ 'access_token' ],  $expires_on );
-        }
-
-        return $token;    
-    }
-
-
-    /**
-     * Effettua la chiamata per la generazione del token
-     * da utilizzare nelle chiamate
-     *
-     * @return array
-     */
-    protected function getTokenData() : array { 
-
-        $apiTokenRequestCall = 'identity/v1/oauth2/token';
     
-        /// Effettua la chiamata
-        $response = $this->httpClient->post( $apiTokenRequestCall, [
-
-            'headers' => [
-
-                'Content-Type' => 'application/x-www-form-urlencoded',
-
-                /// indica che il marketplace è quello italiano
-                'X-EBAY-C-MARKETPLACE-ID' => 'EBAY_IT',
-
-                /// basic auth con le credenziali in formato base64
-                'Authorization' => 'Basic QmxhemVNZWQtdGVsZWZvbmktUFJELWZlYWEzZDdlNi0yNjAzY2U0MjpQUkQtZWFhM2Q3ZTYzNTFiLWY0ZmItNDk1NC04ZWVmLWIyN2Q='                  
-            ],
-
-            'form_params' => [ 
-
-                /// indica che cerchiamo di ottenere le credenziali per una applicazione 
-                /// ( a differenza dello user_credentials che serve per le credenziali utente )
-                'grant_type' => 'client_credentials',
-                
-                /// indica che utilizzeremo le feed api
-                'scope' => 'https://api.ebay.com/oauth/api_scope/buy.item.feed' 
-            ]
-        ]);
-
-        if( empty($response) ) return '';
-
-        /// prende lo stream dati come stringa
-        $string_data = $response->getBody()->getContents();
-
-        if( empty( $string_data ) ) return '';
-
-        /// la trasforma in array associativo
-        $data = json_decode( $string_data, true );
-
-        return $data;
-    }
-
-    
-    public static function getInstance() : ApiClient {
+    public static function getInstance( int $categoryId) : ApiClient {
 
         if( self::$instance === null ) {
 
-            self::$instance = new self;
+            self::$instance = new self( $categoryId );
         }
 
         return self::$instance;

@@ -5,6 +5,8 @@ namespace Tests;
 use Blazemedia\EbayProductFeedApi\ApiClient;
 use PHPUnit\Framework\TestCase;
 
+define('DEF_CATERGORY_ID', 11450);
+
 final class ApiClientTest extends TestCase {
 
     protected $client;
@@ -13,7 +15,7 @@ final class ApiClientTest extends TestCase {
 
         parent::setUP();
 
-        $this->client = ApiClient::getInstance();
+        $this->client = ApiClient::getInstance( DEF_CATERGORY_ID );
 
     }
 
